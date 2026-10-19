@@ -26,6 +26,36 @@ typedef struct StructFlags {
 
 // --- function --- //
 
+int my_length(char* string) {
+    int index = 0;
+    while (string[index] != '\0') {
+        index += 1;
+    }
+    return index;
+}
+
+void my_strcpy(char* string_var, char* string_copy) {
+    int index = 0;
+    int length = my_length(string_copy);
+    while (index < length) {
+        string_var[index] = string_copy[index];
+        index += 1;
+    }
+    string_var[index] = '\0';
+    return;
+}
+
+int is_char_in_string(char caract, char* string) {
+    int index = 0;
+    while (index < my_length(string)) {
+        if (string[index] == caract) {
+            return 1;
+        }
+        index += 1;
+    }
+    return 0;
+}
+
 // --- main --- //
 int main(int argc, char **argv){
 
