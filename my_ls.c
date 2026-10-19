@@ -7,6 +7,23 @@
 
 // --- structure --- //
 
+typedef struct StructFile {
+    char* name;
+    // TYPE time;
+} File;
+
+typedef struct StructArrayFiles {
+    File** array;
+    int length;
+} ArrayFiles;
+
+typedef struct StructFlags {
+    char* column;
+    char sort;
+    int nb_argv;
+    int status;
+} Flags;
+
 // --- function --- //
 
 // --- main --- //
