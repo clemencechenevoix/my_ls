@@ -57,7 +57,89 @@ int is_char_in_string(char caract, char* string) {
     return 0;
 }
 
+void my_memset(char* string, char caract, int length) {
+    int index = 0;
+    while (index < length) {
+        string[index] = caract;
+        index += 1;
+    }
+}
+
 // - get - //
+
+int get_flags_in_string(Flags* StructFlag, char** argv, char* autorize_column, char* autorize_sort, int index_argv, int index_struct) {
+    int index_column = 1;
+    int is_in_column = 0;
+    int is_in_sort = 0;
+    int index_struct_column = index_struct;
+
+    while (index_column < my_length(argv[index_argv])) {
+        if (is_char_in_string(argv[index_argv][index_column], autorize_sort) == 1) {
+            StructFlag->sort = argv[index_argv][index_column];
+            is_in_sort = 1;
+        }
+        if (is_char_in_string(argv[index_argv][index_column], autorize_column) == 1) {
+            if (is_char_in_string(argv[index_argv][index_column], StructFlag->column) == 1) {
+                StructFlag->status = -2;
+                printf("Duplicated option\n");
+                return index_struct_column;
+            }
+            StructFlag->column[index_struct_column] = argv[index_argv][index_column];
+            index_struct_column += 1;
+            is_in_column = 1;
+        }
+        if (is_in_sort == 0 && is_in_column == 0) {
+            StructFlag->status = -1;
+            printf("One of the option doesn't exist\n");
+            return index_struct_column;
+        }
+
+        is_in_sort = 0;
+        is_in_column = 0;
+        index_column += 1;
+    }
+    return index_struct_column;
+}
+
+void get_flags_in_array(Flags* StructFlag, char** argv, char* autorize_column, char* autorize_sort) {
+    int index_struct_column = 0;
+    int index_argv = 1;
+
+    StructFlag->status = 0;
+    while (index_argv < StructFlag->nb_argv) {
+        index_struct_column = get_flags_in_string(StructFlag, argv, autorize_column, autorize_sort, index_argv, index_struct_column);
+        if (StructFlag->status < 0) {
+            return;
+        }
+        index_argv += 1;
+    }
+
+    return;
+}
+
+Flags* get_flags(int argc, char** argv) {
+    Flags* StructFlag = malloc(sizeof(Flags));
+    int index_argv = 1;
+    int nb_flag = 0;
+
+    char* autorize_column = malloc(sizeof(char) * 4);
+    my_strcpy(autorize_column, "ats");
+    char* autorize_sort = malloc(sizeof(char) * 3);
+    my_strcpy(autorize_sort, "ts");
+
+    while (index_argv < argc && argv[index_argv][0] == '-') {
+        nb_flag += my_length(argv[index_argv]) - 1;
+        index_argv += 1;
+    }
+    StructFlag->column = malloc(sizeof(char) * (nb_flag + 1));
+    my_memset(StructFlag->column, '\0', nb_flag + 1);
+    StructFlag->nb_argv = index_argv;
+    
+    get_flags_in_array(StructFlag, argv, autorize_column, autorize_sort);
+    free(autorize_column);
+    free(autorize_sort);
+    return StructFlag;
+}
 
 int get_nb_entry_folder(char* folder_name){
     DIR *directory;
@@ -121,7 +203,7 @@ ArrayFiles* get_files(char* folder_name) {
 }
 
 // - print - //
-void print_array(ArrayFiles* struct_file, char* folder_name, bool multiple_folder) {
+void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, bool multiple_folder) {
     int number_column = 0;
     int index_file = 0;
 
@@ -139,6 +221,12 @@ void print_array(ArrayFiles* struct_file, char* folder_name, bool multiple_folde
 
 // - free - //
 
+void free_struct_flags(Flags* StuctureFlags) {
+    free(StuctureFlags->column);
+    free(StuctureFlags);
+    return;
+}
+
 void free_struct_files(ArrayFiles* StructureFiles) {
     int index = 0;
     while(index < StructureFiles->length) {
@@ -152,34 +240,39 @@ void free_struct_files(ArrayFiles* StructureFiles) {
 
 // - ls - //
 
-void my_ls(char* folder_name, bool multiple_folder) {
+void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     ArrayFiles* structure_file = get_files(folder_name);
     if (structure_file->status < 0) {
         return;
     }
 
-    print_array(structure_file, folder_name, multiple_folder);
+    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, multiple_folder);
     free_struct_files(structure_file);
     return;
 }
 
 // --- main --- //
 int main(int argc, char **argv){
-    int nb_argv = 1;
-
-    if ((nb_argv == argc)) {
-        my_ls(".", false);
+    Flags* structure_flags = get_flags(argc, argv);
+    if (structure_flags->status < 0) {
+        free_struct_flags(structure_flags);
+        return 1;
     }
-    else if (nb_argv == (argc - 1)) {
-        my_ls(argv[nb_argv], false);
+
+    if ((structure_flags->nb_argv == argc)) {
+        my_ls(structure_flags, ".", false);
+    }
+    else if (structure_flags->nb_argv == (argc - 1)) {
+        my_ls(structure_flags, argv[structure_flags->nb_argv], false);
     }
     else {
-        int index = nb_argv;
+        int index = structure_flags->nb_argv;
         while (index < argc) {
-            my_ls(argv[index], true);
+            my_ls(structure_flags, argv[index], true);
             index += 1;
         }
     }
 
+    free_struct_flags(structure_flags);
     return 0;
 }
