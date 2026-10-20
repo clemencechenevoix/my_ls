@@ -134,6 +134,7 @@ Flags* get_flags(int argc, char** argv) {
     StructFlag->column = malloc(sizeof(char) * (nb_flag + 1));
     my_memset(StructFlag->column, '\0', nb_flag + 1);
     StructFlag->nb_argv = index_argv;
+    StructFlag->sort = '\0';
     
     get_flags_in_array(StructFlag, argv, autorize_column, autorize_sort);
     free(autorize_column);
@@ -204,14 +205,16 @@ ArrayFiles* get_files(char* folder_name) {
 
 // - print - //
 void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, bool multiple_folder) {
-    int number_column = 0;
     int index_file = 0;
+    int a_flag = is_char_in_string('a', column);
 
     if (multiple_folder == true) {
         printf("%s:\n", folder_name);
     }
     while (index_file < struct_file->length) {
-        printf("%s\n", struct_file->array[index_file]->name);
+        if (a_flag == 1 || struct_file->array[index_file]->name[0] != '.') {
+            printf("%s\n", struct_file->array[index_file]->name);
+        }
         index_file += 1;
     }
     printf("\n");
@@ -227,14 +230,17 @@ void free_struct_flags(Flags* StuctureFlags) {
     return;
 }
 
-void free_struct_files(ArrayFiles* StructureFiles) {
+void free_struct_files(ArrayFiles* StructureFiles, int status) {
     int index = 0;
-    while(index < StructureFiles->length) {
+
+    if (status != -1) {
+        while(index < StructureFiles->length) {
         free(StructureFiles->array[index]->name);
         free(StructureFiles->array[index]);
         index += 1;
     }
-    free(StructureFiles->array);
+        free(StructureFiles->array);
+    }
     free(StructureFiles);
 }
 
@@ -243,11 +249,12 @@ void free_struct_files(ArrayFiles* StructureFiles) {
 void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     ArrayFiles* structure_file = get_files(folder_name);
     if (structure_file->status < 0) {
+        free_struct_files(structure_file, structure_file->status) ;
         return;
     }
 
     print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, multiple_folder);
-    free_struct_files(structure_file);
+    free_struct_files(structure_file, structure_file->status);
     return;
 }
 
@@ -258,7 +265,7 @@ int main(int argc, char **argv){
         free_struct_flags(structure_flags);
         return 1;
     }
-
+    
     if ((structure_flags->nb_argv == argc)) {
         my_ls(structure_flags, ".", false);
     }
