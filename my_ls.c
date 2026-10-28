@@ -1,7 +1,7 @@
 // --- include --- //
 #include <stdio.h> // include: printf
 #include <stdlib.h> // include: malloc, free
-#include <sys/stat.h> // include: files stats function
+#include <sys/stat.h> // include: stat, lstat
 #include <unistd.h>
 #include <dirent.h> // include: opendir, readdir, closedir
 
@@ -9,12 +9,14 @@
 
 typedef struct StructFile {
     char* name;
-    // TYPE time;
+    long time;
+    int size;
 } File;
 
 typedef struct StructArrayFiles {
     File** array;
     int* array_index_sorted;
+    int size;
     int length;
     int status;
 } ArrayFiles;
@@ -122,6 +124,38 @@ int checkIfFileExists(const char *filename) {
 }
 
 // - sort - //
+
+void print_int(int* array, int length){
+    printf("------------\n");
+    int index = 0;
+    while(index < length){
+        printf("%d\n", array[index]);
+        index += 1;
+    }
+    printf("------------\n");
+}
+
+void sort_file_by_size(File** file_array, int* index_array_to_sort, int length) {
+    if (length < 1) {
+        return;
+    }
+    index_array_to_sort[0] = 0;
+    int length_sort = 1;
+    int index_to_sort = 1;
+    int index_sort = 0;
+    
+    while(index_to_sort < length && length_sort < length){
+        if (index_sort == length_sort || file_array[index_to_sort]->size > file_array[index_array_to_sort[index_sort]]->size) {
+            append_int_at_index(index_array_to_sort, length_sort, index_to_sort, index_sort);
+            index_sort = 0;
+            index_to_sort += 1;
+            length_sort += 1;
+        } else {
+            index_sort += 1;
+        }
+    }
+}
+
 void sort_file_by_lexical(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -169,23 +203,10 @@ int* sort_main_var_by_lexical(char** argv, int* index_array_to_sort, int length)
     return index_array_sorted;
 }
 
-void dispach_sort_main_var(MainVar* structMainVar,char** argv, char sort_flag) {  
-    if (sort_flag == 't'){
-        //append_sorted_by_time(NULL, argv, structMainVar->folder);
-        //append_sorted_by_time(NULL, argv, structMainVar->files);
-    } else if (sort_flag == 's'){
-        //append_sorted_by_size(NULL, argv, structMainVar->folder);
-        //append_sorted_by_size(NULL, argv, structMainVar->files);
-    } else {
-        structMainVar->folder = sort_main_var_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
-        structMainVar->files = sort_main_var_by_lexical(argv, structMainVar->files, structMainVar->length_files);
-    }
-    return;
-}
-
 void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {  
     if (sort_flag == 't'){
-    } else if (sort_flag == 's'){
+    } else if (sort_flag == 'S'){
+        sort_file_by_size(structArrayFile->array, structArrayFile->array_index_sorted, structArrayFile->length);
     } else {
         sort_file_by_lexical(structArrayFile->array, structArrayFile->array_index_sorted, structArrayFile->length);
     }
@@ -308,7 +329,7 @@ Flags* get_flags(MainVar* StructMainVar, char** argv) {
     char* autorize_column = malloc(sizeof(char) * 4);
     my_strcpy(autorize_column, "ats");
     char* autorize_sort = malloc(sizeof(char) * 3);
-    my_strcpy(autorize_sort, "ts");
+    my_strcpy(autorize_sort, "tS");
 
     while (index < StructMainVar->length_flags) {
         nb_flag += my_length(argv[StructMainVar->flags[index]]) - 1;
@@ -322,6 +343,30 @@ Flags* get_flags(MainVar* StructMainVar, char** argv) {
     free(autorize_column);
     free(autorize_sort);
     return StructFlag;
+}
+
+char* get_path(char* folder_name, char* file_name){
+    int length_folder_name = my_length(folder_name);
+    int length_file_name = my_length(file_name);
+    char* path = malloc(sizeof(char) * ( length_folder_name + length_file_name + 2));
+    int index = 0;
+    int index_path = 0;
+    
+    while (index < length_folder_name) {
+        path[index_path] = folder_name[index];
+        index += 1;
+        index_path += 1;
+    }
+    path[index_path] = '/';
+    index_path += 1;
+    index = 0;
+    while (index < length_file_name) {
+        path[index_path] = file_name[index];
+        index += 1;
+        index_path += 1;
+    }
+    path[index_path] = '\0';
+    return path;
 }
 
 int get_nb_entry_folder(char* folder_name){
@@ -346,7 +391,9 @@ int get_nb_entry_folder(char* folder_name){
 
 int get_folder_info(char* folder_name, ArrayFiles* struct_file) {
     DIR* directory;
+    struct stat informations;
     struct dirent* entry;
+    char* path;
     int index = 0;
     
     directory = opendir(folder_name);
@@ -357,8 +404,17 @@ int get_folder_info(char* folder_name, ArrayFiles* struct_file) {
 
     while((entry = readdir(directory)) != NULL) {
         struct_file->array[index]= malloc(sizeof(File) * 1);
+
+        path = get_path(folder_name, entry->d_name);
+        stat(path, &informations);
+        free(path);
+        struct_file->array[index]->size = (informations.st_blocks * informations.st_blksize)/1000;
+        struct_file->size += struct_file->array[index]->size;
+        struct_file->array[index]->time = informations.st_mtim.tv_sec;
+
         struct_file->array[index]->name = malloc(sizeof(char) * (my_length(entry->d_name) + 1));
         my_strcpy(struct_file->array[index]->name, entry->d_name);
+        printf("name: %s, time: %ld, size:%d \n", struct_file->array[index]->name, struct_file->array[index]->time, struct_file->array[index]->size);
         index += 1;
     }
 
@@ -381,6 +437,7 @@ ArrayFiles* get_files(char* folder_name) {
     struct_file->array = malloc(sizeof(File) * nb_files);
     struct_file->length = nb_files;
     struct_file->array_index_sorted = malloc(sizeof(int) * nb_files);
+    struct_file->size = 0;
     struct_file->status = get_folder_info(folder_name, struct_file);
     return struct_file;
 }
@@ -398,13 +455,22 @@ void print_files(MainVar* StructureMainVar, char** argv) {
 void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, bool multiple_folder) {
     int index_file = 0;
     int a_flag = is_char_in_string('a', column);
+    int s_flag = is_char_in_string('s', column); 
+    bool a_condition;
 
     if (multiple_folder == true) {
         printf("%s:\n", folder_name);
     }
+    if (s_flag == 1) {
+        printf("total %d\n", struct_file->size);
+    }
     while (index_file < struct_file->length) {
-        if (a_flag == 1 || struct_file->array[struct_file->array_index_sorted[index_file]]->name[0] != '.') {
-            printf("%s\n", struct_file->array[struct_file->array_index_sorted[index_file]]->name);
+        a_condition = a_flag == 1 || struct_file->array[struct_file->array_index_sorted[index_file]]->name[0] != '.';
+        if (s_flag == 1 && a_condition) {
+            printf("%d ", struct_file->array[struct_file->array_index_sorted[index_file]]->size);
+        }
+        if (a_condition) {
+            printf("%s \n", struct_file->array[struct_file->array_index_sorted[index_file]]->name);
         }
         index_file += 1;
     }
@@ -456,7 +522,7 @@ void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
         return;
     }
     
-    dispach_sort_file(structure_file,StuctureFlags->sort);
+    dispach_sort_file(structure_file, StuctureFlags->sort);
     print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, multiple_folder);
     free_struct_files(structure_file);
     return;
@@ -477,7 +543,8 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    dispach_sort_main_var(structMainVar, argv, structure_flags->sort);
+    structMainVar->folder = sort_main_var_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
+    structMainVar->files = sort_main_var_by_lexical(argv, structMainVar->files, structMainVar->length_files);
     print_files(structMainVar, argv);
 
     if ((structMainVar->length_folder == 0)) {
