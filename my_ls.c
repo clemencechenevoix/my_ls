@@ -135,6 +135,27 @@ void print_int(int* array, int length){
     printf("------------\n");
 }
 
+void sort_file_by_time(File** file_array, int* index_array_to_sort, int length) {
+    if (length < 1) {
+        return;
+    }
+    index_array_to_sort[0] = 0;
+    int length_sort = 1;
+    int index_to_sort = 1;
+    int index_sort = 0;
+    
+    while(index_to_sort < length && length_sort < length){
+        if (index_sort == length_sort || file_array[index_to_sort]->time >= file_array[index_array_to_sort[index_sort]]->time) {
+            append_int_at_index(index_array_to_sort, length_sort, index_to_sort, index_sort);
+            index_sort = 0;
+            index_to_sort += 1;
+            length_sort += 1;
+        } else {
+            index_sort += 1;
+        }
+    }
+}
+
 void sort_file_by_size(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -205,6 +226,7 @@ int* sort_main_var_by_lexical(char** argv, int* index_array_to_sort, int length)
 
 void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {  
     if (sort_flag == 't'){
+        sort_file_by_time(structArrayFile->array, structArrayFile->array_index_sorted, structArrayFile->length);
     } else if (sort_flag == 'S'){
         sort_file_by_size(structArrayFile->array, structArrayFile->array_index_sorted, structArrayFile->length);
     } else {
@@ -414,7 +436,6 @@ int get_folder_info(char* folder_name, ArrayFiles* struct_file) {
 
         struct_file->array[index]->name = malloc(sizeof(char) * (my_length(entry->d_name) + 1));
         my_strcpy(struct_file->array[index]->name, entry->d_name);
-        printf("name: %s, time: %ld, size:%d \n", struct_file->array[index]->name, struct_file->array[index]->time, struct_file->array[index]->size);
         index += 1;
     }
 
@@ -482,7 +503,6 @@ void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char 
 // - free - //
 
 void free_struct_main_var(MainVar* StuctureMainVar) {
-    printf("%d\n", StuctureMainVar->status);
     if (StuctureMainVar->status == 0) {
         free(StuctureMainVar->flags);
         free(StuctureMainVar->folder);
