@@ -289,8 +289,8 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
             if (is_char_in_string(flag_string[index_column], StructFlag->column) == 0) {
                 StructFlag->column[index_struct_column] = flag_string[index_column];
                 index_struct_column += 1;
-                is_in_column = 1;
             }
+            is_in_column = 1;
         }
         if (is_in_sort == 0 && is_in_column == 0) {
             StructFlag->status = -1;
@@ -300,7 +300,7 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
 
         is_in_sort = 0;
         is_in_column = 0;
-        index_column += 2;
+        index_column += 1;
     }
     return index_struct_column;
 }
