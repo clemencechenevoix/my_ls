@@ -24,6 +24,8 @@ typedef struct StructArrayFiles {
 typedef struct StructFlags {
     char* column;
     char sort;
+    char display;
+    int way;
     int status;
 } Flags;
 
@@ -236,6 +238,15 @@ void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {
 }
 
 // - get - //
+char get_display_caract(Flags* StructFlag) {
+    if (StructFlag->display == 'l') {
+        return '\n';
+    } else if (StructFlag->display == 'x') {
+        return ' ';
+    }
+    return '\n';
+}
+
 void get_main_var_int_array(MainVar* StructMainVar, char** argv, int argc){
     DIR *directory;
     int index_flags = 0;
@@ -296,10 +307,11 @@ MainVar* get_main_var(char** argv, int argc){
     return StructMainVar;
 }
 
-int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_column, char* autorize_sort, int index_struct) {
+int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_column, char* autorize_sort, char* autorize_display, int index_struct) {
     int index_column = 1;
     int is_in_column = 0;
     int is_in_sort = 0;
+    int is_in_display = 0;
     int index_struct_column = index_struct;
 
     while (index_column < my_length(flag_string)) {
@@ -314,7 +326,11 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
             }
             is_in_column = 1;
         }
-        if (is_in_sort == 0 && is_in_column == 0) {
+        if(is_char_in_string(flag_string[index_column], autorize_display) == 1){
+            StructFlag->display = flag_string[index_column]; 
+            is_in_display = 1;
+        }
+        if (is_in_sort == 0 && is_in_column == 0 && is_in_display == 0) {
             StructFlag->status = -1;
             printf("One of the option doesn't exist\n");
             return index_struct_column;
@@ -327,13 +343,14 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
     return index_struct_column;
 }
 
-void get_flags_in_array(MainVar* StructMainVar, Flags* StructFlag, char** argv, char* autorize_column, char* autorize_sort) {
+void get_flags_in_array(MainVar* StructMainVar, Flags* StructFlag, char** argv, char* autorize_column, char* autorize_sort, char* autorize_display) {
     int index_struct_column = 0;
     int index = 0;
 
     StructFlag->status = 0;
+    StructFlag->display = '1';
     while (index < StructMainVar->length_flags) {
-        index_struct_column = get_flags_in_string(StructFlag, argv[StructMainVar->flags[index]], autorize_column, autorize_sort, index_struct_column);
+        index_struct_column = get_flags_in_string(StructFlag, argv[StructMainVar->flags[index]], autorize_column, autorize_sort, autorize_display, index_struct_column);
         if (StructFlag->status < 0) {
             return;
         }
@@ -352,6 +369,8 @@ Flags* get_flags(MainVar* StructMainVar, char** argv) {
     my_strcpy(autorize_column, "ats");
     char* autorize_sort = malloc(sizeof(char) * 3);
     my_strcpy(autorize_sort, "tS");
+    char* autorize_display = malloc(sizeof(char) * 3);
+    my_strcpy(autorize_display, "1x");
 
     while (index < StructMainVar->length_flags) {
         nb_flag += my_length(argv[StructMainVar->flags[index]]) - 1;
@@ -361,9 +380,10 @@ Flags* get_flags(MainVar* StructMainVar, char** argv) {
     my_memset(StructFlag->column, '\0', nb_flag + 1);
     StructFlag->sort = '\0';
     
-    get_flags_in_array(StructMainVar, StructFlag, argv, autorize_column, autorize_sort);
+    get_flags_in_array(StructMainVar, StructFlag, argv, autorize_column, autorize_sort, autorize_display);
     free(autorize_column);
     free(autorize_sort);
+    free(autorize_display);
     return StructFlag;
 }
 
@@ -464,19 +484,19 @@ ArrayFiles* get_files(char* folder_name) {
 }
 
 // - print - //
-void print_files(MainVar* StructureMainVar, char** argv) {
+void print_files(MainVar* StructureMainVar, char** argv, char display_caract) {
     int index = 0;
     while (index < StructureMainVar->length_files) {
-        printf("%s\n", argv[StructureMainVar->files[index]]);
+        printf("%s \n", argv[StructureMainVar->files[index]]);
         index += 1;
     }
-    printf("\n");
+    printf("%c", display_caract);
 }
 
-void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, bool multiple_folder) {
+void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, char display_caract, bool multiple_folder) {
     int index_file = 0;
     int a_flag = is_char_in_string('a', column);
-    int s_flag = is_char_in_string('s', column); 
+    int s_flag = is_char_in_string('s', column);
     bool a_condition;
 
     if (multiple_folder == true) {
@@ -489,13 +509,16 @@ void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char 
         a_condition = a_flag == 1 || struct_file->array[struct_file->array_index_sorted[index_file]]->name[0] != '.';
         if (s_flag == 1 && a_condition) {
             printf("%d ", struct_file->array[struct_file->array_index_sorted[index_file]]->size);
-        }
+        } 
         if (a_condition) {
-            printf("%s \n", struct_file->array[struct_file->array_index_sorted[index_file]]->name);
+            printf("%s %c", struct_file->array[struct_file->array_index_sorted[index_file]]->name, display_caract);
         }
         index_file += 1;
     }
     printf("\n");
+    if (display_caract == ' ' && multiple_folder == true) {
+        printf("\n");
+    }
 
     return;
 }
@@ -543,7 +566,7 @@ void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     }
     
     dispach_sort_file(structure_file, StuctureFlags->sort);
-    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, multiple_folder);
+    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, StuctureFlags->display, multiple_folder);
     free_struct_files(structure_file);
     return;
 }
@@ -563,9 +586,10 @@ int main(int argc, char **argv){
         return 1;
     }
 
+    structure_flags->display = get_display_caract(structure_flags);
     structMainVar->folder = sort_main_var_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
     structMainVar->files = sort_main_var_by_lexical(argv, structMainVar->files, structMainVar->length_files);
-    print_files(structMainVar, argv);
+    print_files(structMainVar, argv, structure_flags->display);
 
     if ((structMainVar->length_folder == 0)) {
         my_ls(structure_flags, ".", false);
