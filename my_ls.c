@@ -127,16 +127,6 @@ int checkIfFileExists(const char *filename) {
 
 // - sort - //
 
-void print_int(int* array, int length){
-    printf("------------\n");
-    int index = 0;
-    while(index < length){
-        printf("%d\n", array[index]);
-        index += 1;
-    }
-    printf("------------\n");
-}
-
 void sort_file_by_time(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -200,7 +190,7 @@ void sort_file_by_lexical(File** file_array, int* index_array_to_sort, int lengt
     }
 }
 
-int* sort_main_var_by_lexical(char** argv, int* index_array_to_sort, int length) {
+int* sort_folder_by_lexical(char** argv, int* index_array_to_sort, int length) {
     if (length < 2) {
         return index_array_to_sort;
     }
@@ -238,6 +228,34 @@ void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {
 }
 
 // - get - //
+ArrayFiles* get_main_file_array_file(char** argv, int* int_array, int length){
+    ArrayFiles* main_file_array = malloc(sizeof(ArrayFiles));
+    struct stat informations;
+    int index = 0;
+
+    if (length == 0) {
+        main_file_array->status = -1;
+        return main_file_array;
+    }
+
+    main_file_array->array = malloc(sizeof(File*) * length);
+    main_file_array->length = length;
+    main_file_array->status = 0;
+    
+    while (index < length) {
+        main_file_array->array[index] = malloc(sizeof(File));
+        stat(argv[int_array[index]], &informations);
+        main_file_array->array[index]->size = (informations.st_blocks * informations.st_blksize)/1000;
+        main_file_array->array[index]->time = informations.st_mtim.tv_sec;
+        main_file_array->array[index]->name = malloc(sizeof(char) * (my_length(argv[int_array[index]]) + 1));
+        my_strcpy(main_file_array->array[index]->name, argv[int_array[index]]);
+
+        index += 1;
+    }
+    main_file_array->array_index_sorted = malloc(sizeof(int) * length);
+    return main_file_array;
+}
+
 char get_display_caract(Flags* StructFlag) {
     if (StructFlag->display == 'l') {
         return '\n';
@@ -330,7 +348,10 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
             StructFlag->display = flag_string[index_column]; 
             is_in_display = 1;
         }
-        if (is_in_sort == 0 && is_in_column == 0 && is_in_display == 0) {
+        if(flag_string[index_column] == 'r' && StructFlag->way == 1){
+            StructFlag->way = -1; 
+        }
+        if (is_in_sort == 0 && is_in_column == 0 && is_in_display == 0 && flag_string[index_column] != 'r') {
             StructFlag->status = -1;
             printf("One of the option doesn't exist\n");
             return index_struct_column;
@@ -349,6 +370,7 @@ void get_flags_in_array(MainVar* StructMainVar, Flags* StructFlag, char** argv, 
 
     StructFlag->status = 0;
     StructFlag->display = '1';
+    StructFlag->way = 1;
     while (index < StructMainVar->length_flags) {
         index_struct_column = get_flags_in_string(StructFlag, argv[StructMainVar->flags[index]], autorize_column, autorize_sort, autorize_display, index_struct_column);
         if (StructFlag->status < 0) {
@@ -484,42 +506,44 @@ ArrayFiles* get_files(char* folder_name) {
 }
 
 // - print - //
-void print_files(MainVar* StructureMainVar, char** argv, char display_caract) {
-    int index = 0;
-    while (index < StructureMainVar->length_files) {
-        printf("%s \n", argv[StructureMainVar->files[index]]);
-        index += 1;
-    }
-    printf("%c", display_caract);
-}
 
-void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, char display_caract, bool multiple_folder) {
+void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, char display_caract, int way, bool multiple_folder, bool is_main_file) {
     int index_file = 0;
     int a_flag = is_char_in_string('a', column);
     int s_flag = is_char_in_string('s', column);
     bool a_condition;
-
+    bool limit_condition = index_file < struct_file->length;
+    
+    if (way < 0) {
+        index_file = struct_file->length - 1;
+        limit_condition = index_file > -1;
+    }
     if (multiple_folder == true) {
         printf("%s:\n", folder_name);
     }
-    if (s_flag == 1) {
+    if (s_flag == 1 && is_main_file == false) {
         printf("total %d\n", struct_file->size);
     }
-    while (index_file < struct_file->length) {
+
+    while (limit_condition) {
         a_condition = a_flag == 1 || struct_file->array[struct_file->array_index_sorted[index_file]]->name[0] != '.';
-        if (s_flag == 1 && a_condition) {
+        if (s_flag == 1 && (a_condition || is_main_file == true)) {
             printf("%d ", struct_file->array[struct_file->array_index_sorted[index_file]]->size);
         } 
-        if (a_condition) {
+        if (a_condition || is_main_file == true) {
             printf("%s %c", struct_file->array[struct_file->array_index_sorted[index_file]]->name, display_caract);
         }
-        index_file += 1;
+        index_file += (1 * way);
+        if (way < 0) {
+            limit_condition = index_file > -1;
+        }else{
+            limit_condition = index_file < struct_file->length;
+        }
     }
     printf("\n");
-    if (display_caract == ' ' && multiple_folder == true) {
+    if (display_caract == ' ' && (multiple_folder == true || is_main_file == true)) {
         printf("\n");
     }
-
     return;
 }
 
@@ -546,10 +570,10 @@ void free_struct_files(ArrayFiles* StructureFiles) {
 
     if (StructureFiles->status != -1) {
         while(index < StructureFiles->length) {
-        free(StructureFiles->array[index]->name);
-        free(StructureFiles->array[index]);
-        index += 1;
-    }   
+            free(StructureFiles->array[index]->name);
+            free(StructureFiles->array[index]);
+            index += 1;
+        }   
         free(StructureFiles->array_index_sorted);
         free(StructureFiles->array);
     }
@@ -566,7 +590,7 @@ void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     }
     
     dispach_sort_file(structure_file, StuctureFlags->sort);
-    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, StuctureFlags->display, multiple_folder);
+    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, StuctureFlags->display, StuctureFlags->way, multiple_folder, false);
     free_struct_files(structure_file);
     return;
 }
@@ -586,22 +610,39 @@ int main(int argc, char **argv){
         return 1;
     }
 
+    
+    ArrayFiles* main_file_array = get_main_file_array_file(argv, structMainVar->files, structMainVar->length_files);
     structure_flags->display = get_display_caract(structure_flags);
-    structMainVar->folder = sort_main_var_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
-    structMainVar->files = sort_main_var_by_lexical(argv, structMainVar->files, structMainVar->length_files);
-    print_files(structMainVar, argv, structure_flags->display);
+    structMainVar->folder = sort_folder_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
+    
+    if (main_file_array->status != -1){
+        dispach_sort_file(main_file_array, structure_flags->sort);
+        print_array(main_file_array, "", structure_flags->column, structure_flags->sort, structure_flags->display, structure_flags->way, false, true);
+    }
 
     if ((structMainVar->length_folder == 0)) {
         my_ls(structure_flags, ".", false);
     }
     else {
         int index = 0;
-        while (index < structMainVar->length_folder) {
+        bool limit_condition = index < structMainVar->length_folder;
+        if (structure_flags->way < 0) {
+            index = structMainVar->length_folder - 1;
+            limit_condition = index > -1;
+        }
+        while (limit_condition) {
             my_ls(structure_flags, argv[structMainVar->folder[index]], true);
-            index += 1;
+            
+            index += 1 * structure_flags->way;
+            if (structure_flags->way < 0) {
+                limit_condition = index > -1;
+            }else{
+                limit_condition = index < structMainVar->length_folder;
+            }
         }
     }
 
+    free_struct_files(main_file_array);
     free_struct_main_var(structMainVar);
     free_struct_flags(structure_flags);
     return 0;
