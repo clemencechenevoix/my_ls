@@ -1,11 +1,11 @@
-// --- include --- //
+// ----- include ----- //
 #include <stdio.h> // include: printf
 #include <stdlib.h> // include: malloc, free
 #include <sys/stat.h> // include: stat, lstat
 #include <unistd.h>
 #include <dirent.h> // include: opendir, readdir, closedir
 
-// --- structure --- //
+// ----- structure ----- //
 
 typedef struct StructFile {
     char* name;
@@ -39,8 +39,13 @@ typedef struct StructMainVar {
     int status;
 } MainVar;
 
-// --- function --- //
+// ----- function ----- //
 
+/** 
+* @brief count the number of characters in a string
+* @param char* str (a word or a sentence)
+* @return int (the length of the string)
+*/
 int my_length(char* string) {
     int index = 0;
     while (string[index] != '\0') {
@@ -49,6 +54,12 @@ int my_length(char* string) {
     return index;
 }
 
+/** 
+* @brief copy string_copy into string_var
+* @param char* string_var (a malloc buffer with enough place)
+* @param char* string_copy (the string to copy)
+* @return void
+*/
 void my_strcpy(char* string_var, char* string_copy) {
     int index = 0;
     int length = my_length(string_copy);
@@ -60,6 +71,12 @@ void my_strcpy(char* string_var, char* string_copy) {
     return;
 }
 
+/** 
+* @brief compare two string and return the smallest
+* @param char* string1 (a malloc buffer with enough place)
+* @param char* string2 (the string to copy)
+* @return char* the smallest string
+*/
 char* my_strcmp(char* string1, char* string2) {
     int index = 0;
     int length = my_length(string1);
@@ -81,10 +98,16 @@ char* my_strcmp(char* string1, char* string2) {
     return return_string;
 }
 
-int is_char_in_string(char caract, char* string) {
+/** 
+* @brief search if the given character is in the given string
+* @param char caract
+* @param char* string
+* @return int 1 if found, else 0
+*/
+int is_char_in_string(char charact, char* string) {
     int index = 0;
     while (index < my_length(string)) {
-        if (string[index] == caract) {
+        if (string[index] == charact) {
             return 1;
         }
         index += 1;
@@ -92,6 +115,14 @@ int is_char_in_string(char caract, char* string) {
     return 0;
 }
 
+/** 
+* @brief add a int in the given int* at a given index
+* @param index* index_array (the array need to have enough space in the malloc to add a new entitie)
+* @param int length (length of index_array)
+* @param int integer (the int to add in the array)
+* @param int index_add (index of the add integer)
+* @return void
+*/
 void append_int_at_index(int* index_array, int length, int integer, int index_add) {
     if (length == 0 || length == index_add) {
         index_array[length] = integer;
@@ -107,6 +138,13 @@ void append_int_at_index(int* index_array, int length, int integer, int index_ad
     index_array[index] = integer;
 }
 
+/** 
+* @brief replace all character of the given string by a given character
+* @param char* string
+* @param char caract
+* @param int length (the length of the string)
+* @return void
+*/
 void my_memset(char* string, char caract, int length) {
     int index = 0;
     while (index < length) {
@@ -115,18 +153,29 @@ void my_memset(char* string, char caract, int length) {
     }
 }
 
+/** 
+* @brief verify if a file with the given name exist
+* @param char* filename
+* @return int 1 if yes, 0 if not
+*/
 int checkIfFileExists(const char *filename) {
-  FILE *file;
-  if (file = fopen(filename, "r")) {
-    fclose(file);
-    return 1;
-  }
+    FILE *file;
+    if ((file = fopen(filename, "r"))) {
+        fclose(file);
+        return 1;
+    }
 
-  return 0;
+    return 0;
 }
 
-// - sort - //
+// --- sort --- //
 
+/** 
+* @brief search if the given character is in the given string
+* @param char caract
+* @param char* string
+* @return void
+*/
 void sort_file_by_time(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -148,6 +197,13 @@ void sort_file_by_time(File** file_array, int* index_array_to_sort, int length) 
     }
 }
 
+/** 
+* @brief sort the file by size by sorting their index
+* @param File** file_array (the array of structure file to sort)
+* @param int* index_array_to_sort (the malloc array to stock the index)
+* @param int length (the length of index_array_to_sort)
+* @return void
+*/
 void sort_file_by_size(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -169,6 +225,13 @@ void sort_file_by_size(File** file_array, int* index_array_to_sort, int length) 
     }
 }
 
+/** 
+* @brief sort the file by lexical order by sorting their index
+* @param File** file_array (the array of structure file to sort)
+* @param int* index_array_to_sort (the malloc array to stock the index)
+* @param int length (the length of index_array_to_sort)
+* @return void
+*/
 void sort_file_by_lexical(File** file_array, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
@@ -190,6 +253,13 @@ void sort_file_by_lexical(File** file_array, int* index_array_to_sort, int lengt
     }
 }
 
+/** 
+* @brief sort the folder given when executing my_ls.c by lexical order by sorting their index
+* @param char** argv (the string array given when executing my_ls.c)
+* @param int* index_array_to_sort (the array with the index to sort)
+* @param int length (the length of index_array_to_sort)
+* @return int* the new array with the sorted index
+*/
 int* sort_folder_by_lexical(char** argv, int* index_array_to_sort, int length) {
     if (length < 2) {
         return index_array_to_sort;
@@ -216,6 +286,13 @@ int* sort_folder_by_lexical(char** argv, int* index_array_to_sort, int length) {
     return index_array_sorted;
 }
 
+
+/** 
+* @brief call the right sorting function for the file depending on the given sorting flag
+* @param ArrayFiles* structArrayFile (the struct with the different informations of the files)
+* @param char sort_flag (the given sorting flag)
+* @return void
+*/
 void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {  
     if (sort_flag == 't'){
         sort_file_by_time(structArrayFile->array, structArrayFile->array_index_sorted, structArrayFile->length);
@@ -227,7 +304,17 @@ void dispach_sort_file(ArrayFiles* structArrayFile, char sort_flag) {
     return;
 }
 
-// - get - //
+// --- get --- //
+
+// - main var - //
+
+/** 
+* @brief create an entity of the structure ArrayFile with the file given when executing my_ls.c
+* @param char** argv (the string array given when executing my_ls.c)
+* @param int* int_array (the struct with the different informations of the files)
+* @param int length (the length of int_array)
+* @return ArrayFiles*
+*/
 ArrayFiles* get_main_file_array_file(char** argv, int* int_array, int length){
     ArrayFiles* main_file_array = malloc(sizeof(ArrayFiles));
     struct stat informations;
@@ -256,15 +343,13 @@ ArrayFiles* get_main_file_array_file(char** argv, int* int_array, int length){
     return main_file_array;
 }
 
-char get_display_caract(Flags* StructFlag) {
-    if (StructFlag->display == 'l') {
-        return '\n';
-    } else if (StructFlag->display == 'x') {
-        return ' ';
-    }
-    return '\n';
-}
-
+/** 
+* @brief scan all the elements of argv and fill the right int array in StructMainVar
+* @param MainVar* StructMainVar (the struct with the different index of the informations given to ./my_ls)
+* @param char** argv (the string array given when executing my_ls.c)
+* @param int argc (the number of elements in argv)
+* @return void
+*/
 void get_main_var_int_array(MainVar* StructMainVar, char** argv, int argc){
     DIR *directory;
     int index_flags = 0;
@@ -291,6 +376,12 @@ void get_main_var_int_array(MainVar* StructMainVar, char** argv, int argc){
     return;
 }
 
+/** 
+* @brief scan all the elements of argv and dispach it in the right category (flags, files or folders)
+* @param char** argv (the string array given when executing my_ls.c)
+* @param int argc (the number of elements in argv)
+* @return MainVar* the structure with the index dispached in array
+*/
 MainVar* get_main_var(char** argv, int argc){
     MainVar* StructMainVar = malloc(sizeof(MainVar));
     DIR *directory;
@@ -325,13 +416,39 @@ MainVar* get_main_var(char** argv, int argc){
     return StructMainVar;
 }
 
+// - flags - //
+
+/**
+* @brief find the right character that change how the print is display depending on the given display flag (-1 or -x) 
+* @param Flags* StructFlag (the structure containing the different flags)
+* @return char
+*/
+char get_display_caract(Flags* StructFlag) {
+    if (StructFlag->display == 'l') {
+        return '\n';
+    } else if (StructFlag->display == 'x') {
+        return ' ';
+    }
+    return '\n';
+}
+
+/**
+* @brief scan a string and find all the flag given in it 
+* @param Flags* StructFlag (the structure containing the different flags)
+* @param char* flag_string (the string to scan)
+* @param char* autorize_column (all the flag authorize for the category column)
+* @param char* autorize_sort (all the flag authorize for the category sort)
+* @param char* autorize_display (all the flag authorize for the category display)
+* @param int index_struct (index of the empty space in column in order to add a new element/flag in it)
+* @return int index_struct_column the new index of the empty space in column
+*/
 int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_column, char* autorize_sort, char* autorize_display, int index_struct) {
     int index_column = 1;
     int is_in_column = 0;
     int is_in_sort = 0;
     int is_in_display = 0;
     int index_struct_column = index_struct;
-
+    
     while (index_column < my_length(flag_string)) {
         if (is_char_in_string(flag_string[index_column], autorize_sort) == 1) {
             StructFlag->sort = flag_string[index_column];
@@ -364,6 +481,16 @@ int get_flags_in_string(Flags* StructFlag, char* flag_string, char* autorize_col
     return index_struct_column;
 }
 
+/**
+* @brief find the right character that change how the print is display depending on the given display flag (-1 or -x) 
+* @param MainVar* StructMainVar (the struct with the different index of the informations given to ./my_ls)
+* @param Flags* StructFlag (the structure containing the different flags)
+* @param char** argv (the string array given when executing my_ls.c)
+* @param char* autorize_column (all the flag authorize for the category column)
+* @param char* autorize_sort (all the flag authorize for the category sort)
+* @param char* autorize_display (all the flag authorize for the category display)
+* @return void
+*/
 void get_flags_in_array(MainVar* StructMainVar, Flags* StructFlag, char** argv, char* autorize_column, char* autorize_sort, char* autorize_display) {
     int index_struct_column = 0;
     int index = 0;
@@ -378,10 +505,14 @@ void get_flags_in_array(MainVar* StructMainVar, Flags* StructFlag, char** argv, 
         }
         index += 1;
     }
-
-    return;
 }
 
+/**
+* @brief create the structure with all the information about the flag by searching the flag in argv
+* @param MainVar* StructMainVar (the struct with the different index of the informations given to ./my_ls)
+* @param char** argv (the string array given when executing my_ls.c)
+* @return Flag* the structure with all the information about the flag
+*/
 Flags* get_flags(MainVar* StructMainVar, char** argv) {
     Flags* StructFlag = malloc(sizeof(Flags));
     int index = 0;
@@ -409,6 +540,14 @@ Flags* get_flags(MainVar* StructMainVar, char** argv) {
     return StructFlag;
 }
 
+// - files - //
+
+/**
+* @brief find the path of the file with the named file_name
+* @param char* file_name (the name of the file)
+* @param char* folder_name (the name of the folder containing the file)
+* @return char* the path of the file
+*/
 char* get_path(char* folder_name, char* file_name){
     int length_folder_name = my_length(folder_name);
     int length_file_name = my_length(file_name);
@@ -433,6 +572,11 @@ char* get_path(char* folder_name, char* file_name){
     return path;
 }
 
+/**
+* @brief find the number of entity (file and folder) in the folder named folder_name
+* @param char* folder_name (the name of the folder)
+* @return int the number of entity (file and folder)
+*/
 int get_nb_entry_folder(char* folder_name){
     DIR *directory;
     struct dirent *entry;
@@ -453,7 +597,13 @@ int get_nb_entry_folder(char* folder_name){
     return nb_files;
 }
 
-int get_folder_info(char* folder_name, ArrayFiles* struct_file) {
+/**
+* @brief stock the information about the files in a folder in struct_file
+* @param ArrayFiles* struct_file (the malloc structure that will contain all the information about the files)
+* @param char* folder_name (the name of the folder)
+* @return int the status (if an error happpends or not)
+*/
+int get_folder_info(ArrayFiles* struct_file, char* folder_name) {
     DIR* directory;
     struct stat informations;
     struct dirent* entry;
@@ -488,6 +638,11 @@ int get_folder_info(char* folder_name, ArrayFiles* struct_file) {
     return 0;
 }
 
+/**
+* @brief find the information about the files in the folder folder_name
+* @param char* folder_name (the name of the folder)
+* @return ArrayFiles* the structure that contain all the information about the files
+*/
 ArrayFiles* get_files(char* folder_name) {
     int nb_files = get_nb_entry_folder(folder_name);
 
@@ -501,13 +656,24 @@ ArrayFiles* get_files(char* folder_name) {
     struct_file->length = nb_files;
     struct_file->array_index_sorted = malloc(sizeof(int) * nb_files);
     struct_file->size = 0;
-    struct_file->status = get_folder_info(folder_name, struct_file);
+    struct_file->status = get_folder_info(struct_file, folder_name);
     return struct_file;
 }
 
-// - print - //
+// --- print --- //
 
-void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char sort, char display_caract, int way, bool multiple_folder, bool is_main_file) {
+/**
+* @brief print the files according to the flags
+* @param ArrayFiles* struct_file (the structure that contain all the information about the files)
+* @param char* folder_name (the name of the folder)
+* @param char* column (the printing information flags)
+* @param char display_caract (the caracter in order to print in column or rows)
+* @param int way (-1 or 1 depending if there is the flag -r or not)
+* @param bool multiple_folder (True if there is multiple folder given to ./my_ls)
+* @param bool is_main_file (True if struct_file is madwith the file given to ./my_ls)
+* @return void
+*/
+void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char display_caract, int way, bool multiple_folder, bool is_main_file) {
     int index_file = 0;
     int a_flag = is_char_in_string('a', column);
     int s_flag = is_char_in_string('s', column);
@@ -544,11 +710,15 @@ void print_array(ArrayFiles* struct_file, char* folder_name, char* column, char 
     if (display_caract == ' ' && (multiple_folder == true || is_main_file == true)) {
         printf("\n");
     }
-    return;
 }
 
-// - free - //
+// --- free --- //
 
+/**
+* @brief free the struct main var and its composants
+* @param MainVar* StructMainVar (the struct with the different index of the informations given to ./my_ls)
+* @return void
+*/
 void free_struct_main_var(MainVar* StuctureMainVar) {
     if (StuctureMainVar->status == 0) {
         free(StuctureMainVar->flags);
@@ -559,12 +729,22 @@ void free_struct_main_var(MainVar* StuctureMainVar) {
     return;
 }
 
+/**
+* @brief free the struct flags and its composants
+* @param Flags* StructFlag (the structure containing the different flags)
+* @return void
+*/
 void free_struct_flags(Flags* StuctureFlags) {
     free(StuctureFlags->column);
     free(StuctureFlags);
     return;
 }
 
+/**
+* @brief free the array files and its composants
+* @param ArrayFiles* structArrayFile (the struct with the different informations of the files)
+* @return void
+*/
 void free_struct_files(ArrayFiles* StructureFiles) {
     int index = 0;
 
@@ -580,8 +760,15 @@ void free_struct_files(ArrayFiles* StructureFiles) {
     free(StructureFiles);
 }
 
-// - ls - //
+// --- ls --- //
 
+/**
+* @brief get the informations of the files in the given folder and print it according to the given flags
+* @param Flags* StuctureFlagss (the structure containing the different flags)
+* @param char* folder_name (the name of the folder)
+* @param bool multiple_folder (True if there are multiple folder given to ./my_ls)
+* @return void
+*/
 void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     ArrayFiles* structure_file = get_files(folder_name);
     if (structure_file->status < 0) {
@@ -590,17 +777,24 @@ void my_ls(Flags* StuctureFlags, char* folder_name, bool multiple_folder) {
     }
     
     dispach_sort_file(structure_file, StuctureFlags->sort);
-    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->sort, StuctureFlags->display, StuctureFlags->way, multiple_folder, false);
+    print_array(structure_file, folder_name, StuctureFlags->column, StuctureFlags->display, StuctureFlags->way, multiple_folder, false);
     free_struct_files(structure_file);
     return;
 }
 
-// --- main --- //
+// ----- main ----- //
+
+/**
+* @brief the main of my_ls.c
+* @param int argc (the number of elements in argv)
+* @param char** argv (the string array given when executing my_ls.c)
+* @return int
+*/
 int main(int argc, char **argv){
     MainVar* structMainVar = get_main_var(argv, argc);
     if (structMainVar->status < 0) {
         free_struct_main_var(structMainVar);
-        return 0;
+        return 1;
     }
 
     Flags* structure_flags = get_flags(structMainVar, argv);
@@ -610,20 +804,18 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    
     ArrayFiles* main_file_array = get_main_file_array_file(argv, structMainVar->files, structMainVar->length_files);
     structure_flags->display = get_display_caract(structure_flags);
     structMainVar->folder = sort_folder_by_lexical(argv, structMainVar->folder, structMainVar->length_folder);
     
     if (main_file_array->status != -1){
         dispach_sort_file(main_file_array, structure_flags->sort);
-        print_array(main_file_array, "", structure_flags->column, structure_flags->sort, structure_flags->display, structure_flags->way, false, true);
+        print_array(main_file_array, "", structure_flags->column, structure_flags->display, structure_flags->way, false, true);
     }
-
+    
     if ((structMainVar->length_folder == 0)) {
         my_ls(structure_flags, ".", false);
-    }
-    else {
+    } else {
         int index = 0;
         bool limit_condition = index < structMainVar->length_folder;
         if (structure_flags->way < 0) {
@@ -636,7 +828,7 @@ int main(int argc, char **argv){
             index += 1 * structure_flags->way;
             if (structure_flags->way < 0) {
                 limit_condition = index > -1;
-            }else{
+            } else {
                 limit_condition = index < structMainVar->length_folder;
             }
         }
