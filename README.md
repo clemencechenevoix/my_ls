@@ -1,8 +1,3 @@
-<h1> 
-<img style="width:75" src= "https://logos-marques.com/wp-content/uploads/2021/03/Linux-Logo.png">
-My_ls
-</h1>
-
 my_ls is a simplify reproduction of the linux command ls
 
 You can have more information on the original ls on its man page: <br>
