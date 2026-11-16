@@ -1,4 +1,7 @@
-# my_ls
+<h1> 
+<img style="width:75" src= "https://logos-marques.com/wp-content/uploads/2021/03/Linux-Logo.png">
+My_ls
+</h1>
 
 my_ls is a simplify reproduction of the linux command ls
 
@@ -8,38 +11,48 @@ https://man7.org/linux/man-pages/man1/ls.1.html
 ### Project organization :
 ---
 
-This project code is contained in my_ls.c . This file is separated in different category:
+This project code is contained in 2 folder: include and src.
+
+include containe:
+
+- `my_ls.h`
+- `utils.h`
+
+They contain the following category:
 ```
 - include
 
 - structure
 
 - function
-    - check
+```
+<br>
+src containe:
 
-    - sort
+<br>
 
-    - get
+- `main.c`
+- `my_ls.c`
+- `options.c`
+- `utils.c`
 
-    - print
+They contain the following category:
+```
+- include
 
-    - free
-
-    - ls
-
-- main
+- function or main
 ```
 ### Tech stack :
 
 ---
-- JavaScript
+- C
 - Makefile
 
 ### Install guide :
 ---
-You need to have the file my_ls.c and the Makefile.
+You need to have the project files and the Makefile.
 
-In order to use my_ls you need to compile the code, to do it you can use:
+In order to use my_ls you need to compile the code, to do so you can use:
 ```
 $> make
 ```
@@ -131,4 +144,4 @@ $> ./my_ls
 ---
 <a href="https://github.com/clemencechenevoix">Clemence Chenevoix</a>, 2nd year student in programming school
 
-This project was created for a school exercice name MY_LS .
+This project was created for a school exercice named MY_LS .
