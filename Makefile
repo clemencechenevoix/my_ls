@@ -1,16 +1,19 @@
 # -- Variable -- #
-CC = gcc
-CFLAGS = -fsanitize=address -g3 -Wall
-SOURCES = my_ls.c
+SOURCES = $(shell find src -name "*.c")
 OBJECTS = $(SOURCES:.c=.o)
+
 TARGET = my_ls
+
+CC = gcc
+INCLUDE = -I include/
+CFLAGS = -fsanitize=address -g3 -Wall -Werror -Wextra
 
 # -- default rule -- #
 all: $(TARGET)
 
 # -- executable link -- #
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGET) $(OBJECTS) $(CFLAGS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(CFLAGS)
 
 # -- clean OBJECTS files -- #
 clean:
