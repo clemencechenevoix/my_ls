@@ -236,6 +236,7 @@ main_var_t* get_main_var(char** argv, int argc){
         } else if (check_if_file_exist(argv[index])){
             length_files += 1;
         } else {
+            printf("file or directory %s does'nt exist\n", argv[index]);
             struct_main_var->status = -1;
             return struct_main_var;
         }
@@ -312,6 +313,7 @@ int get_flags_in_string(flag_t* struct_flag, char* flag_string, char* autorize_c
 
         is_in_sort = 0;
         is_in_column = 0;
+        is_in_display = 0;
         index_column += 1;
     }
     return index_struct_column;
