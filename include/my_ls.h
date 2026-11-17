@@ -16,6 +16,7 @@ void dispach_sort_file(array_file_t*, char);
 
 // - main var - //
 main_var_t* get_main_var(char**, int);
+array_file_t* get_main_file_array_file(char**, int*, int);
 
 // - flags - //
 char get_display_caract(flag_t*);
