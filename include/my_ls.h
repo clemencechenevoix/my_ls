@@ -1,6 +1,7 @@
 // ------- include ------- //
 #include <sys/stat.h> // include: stat, lstat
 #include <dirent.h> // include: opendir, readdir, closedir
+#include <stdbool.h> // bool
 
 #include "./utils.h" // the utils
 
