@@ -1,7 +1,6 @@
 // ------- include ------- //
 #include <sys/stat.h> // include: stat, lstat
 #include <dirent.h> // include: opendir, readdir, closedir
-#include <stdbool.h> // bool
 
 #include "./utils.h" // the utils
 
@@ -36,10 +35,10 @@ int get_folder_info(array_file_t*, char*);
 array_file_t* get_files(char*);
 
 // --- print --- //
-void print_array(array_file_t*, char*, char*, char, int, bool, bool);
+void print_array(array_file_t*, char*, char*, char, int, int, int);
 
 // --- gestion --- //
-void folder_gestion(flag_t*, char*, bool);
+void folder_gestion(flag_t*, char*, int);
 
 // ----- my_ls.c ----- //
 

@@ -17,20 +17,20 @@ void my_ls(main_var_t* struct_main_var, flag_t* struct_flag, char** argv) {
     
     if (struct_array_main_file->status != -1){
         dispach_sort_file(struct_array_main_file, struct_flag->sort);
-        print_array(struct_array_main_file, "", struct_flag->column, struct_flag->display, struct_flag->way, false, true);
+        print_array(struct_array_main_file, "", struct_flag->column, struct_flag->display, struct_flag->way, 0, 1);
     }
     
     if ((struct_main_var->length_folder == 0)) {
-        folder_gestion(struct_flag, ".", false);
+        folder_gestion(struct_flag, ".", 0);
     } else {
         int index = 0;
-        bool limit_condition = index < struct_main_var->length_folder;
+        int limit_condition = index < struct_main_var->length_folder;
         if (struct_flag->way < 0) {
             index = struct_main_var->length_folder - 1;
             limit_condition = index > -1;
         }
         while (limit_condition) {
-            folder_gestion(struct_flag, argv[struct_main_var->folder[index]], true);
+            folder_gestion(struct_flag, argv[struct_main_var->folder[index]], 1);
 
             index += 1 * struct_flag->way;
             if (struct_flag->way < 0) {

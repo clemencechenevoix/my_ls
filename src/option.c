@@ -507,34 +507,34 @@ array_file_t* get_files(char* folder_name) {
 * @param char* column (the printing information flags)
 * @param char display_caract (the caracter in order to print in column or rows)
 * @param int way (-1 or 1 depending if there is the flag -r or not)
-* @param bool multiple_folder (True if there is multiple folder given to ./my_ls)
-* @param bool is_main_file (True if struct_file is madwith the file given to ./my_ls)
+* @param int multiple_folder (1 if there is multiple folder given to ./my_ls)
+* @param int is_main_file (1 if struct_file is made with the file given to ./my_ls)
 * @return void
 */
-void print_array(array_file_t* struct_file, char* folder_name, char* column, char display_caract, int way, bool multiple_folder, bool is_main_file) {
+void print_array(array_file_t* struct_file, char* folder_name, char* column, char display_caract, int way, int multiple_folder, int is_main_file) {
     int index_file = 0;
     int a_flag = check_if_char_in_string(column, 'a');
     int s_flag = check_if_char_in_string(column, 's');
-    bool a_condition;
-    bool limit_condition = index_file < struct_file->length;
+    int a_condition;
+    int limit_condition = index_file < struct_file->length;
     
     if (way < 0) {
         index_file = struct_file->length - 1;
         limit_condition = index_file > -1;
     }
-    if (multiple_folder == true) {
+    if (multiple_folder == 1) {
         printf("%s:\n", folder_name);
     }
-    if (s_flag == 1 && is_main_file == false) {
+    if (s_flag == 1 && is_main_file == 0) {
         printf("total %d\n", struct_file->size);
     }
 
     while (limit_condition) {
         a_condition = a_flag == 1 || struct_file->array[struct_file->array_index_sorted[index_file]]->name[0] != '.';
-        if (s_flag == 1 && (a_condition || is_main_file == true)) {
+        if (s_flag == 1 && (a_condition || is_main_file == 1)) {
             printf("%d ", struct_file->array[struct_file->array_index_sorted[index_file]]->size);
         } 
-        if (a_condition || is_main_file == true) {
+        if (a_condition || is_main_file == 1) {
             printf("%s %c", struct_file->array[struct_file->array_index_sorted[index_file]]->name, display_caract);
         }
         index_file += way;
@@ -545,7 +545,7 @@ void print_array(array_file_t* struct_file, char* folder_name, char* column, cha
         }
     }
     printf("\n");
-    if (display_caract == ' ' && (multiple_folder == true || is_main_file == true)) {
+    if (display_caract == ' ' && (multiple_folder == 1 || is_main_file == 1)) {
         printf("\n");
     }
 }
@@ -555,10 +555,10 @@ void print_array(array_file_t* struct_file, char* folder_name, char* column, cha
 * @brief get the informations of the files in the given folder and print it according to the given flags
 * @param flag_t* struct_flag (the structure containing the different flags)
 * @param char* folder_name (the name of the folder)
-* @param bool multiple_folder (True if there are multiple folder given to ./my_ls)
+* @param int multiple_folder (1 if there are multiple folder given to ./my_ls)
 * @return void
 */
-void folder_gestion(flag_t* struct_flag, char* folder_name, bool multiple_folder) {
+void folder_gestion(flag_t* struct_flag, char* folder_name, int multiple_folder) {
     array_file_t* structure_file = get_files(folder_name);
     if (structure_file->status < 0) {
         free_struct_files(structure_file) ;
@@ -566,7 +566,7 @@ void folder_gestion(flag_t* struct_flag, char* folder_name, bool multiple_folder
     }
     
     dispach_sort_file(structure_file, struct_flag->sort);
-    print_array(structure_file, folder_name, struct_flag->column, struct_flag->display, struct_flag->way, multiple_folder, false);
+    print_array(structure_file, folder_name, struct_flag->column, struct_flag->display, struct_flag->way, multiple_folder, 0);
     free_struct_files(structure_file);
     return;
 }
