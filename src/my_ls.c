@@ -16,12 +16,14 @@ void my_ls(main_var_t* struct_main_var, flag_t* struct_flag, char** argv) {
     struct_main_var->folder = sort_folder_by_lexical(argv, struct_main_var->folder, struct_main_var->length_folder);
     
     if (struct_array_main_file->status != -1){
-        dispach_sort_file(struct_array_main_file, struct_flag->sort);
+        sort_file(struct_array_main_file, struct_flag->sort_secondary, struct_flag->sort_secondary);
         print_array(struct_array_main_file, "", struct_flag->column, struct_flag->display, struct_flag->way, 0, 1);
     }
     
-    if ((struct_main_var->length_folder == 0)) {
+    if (struct_main_var->length_folder == 0) {
         folder_gestion(struct_flag, ".", 0);
+    } else if (struct_main_var->length_folder == 1) {
+        folder_gestion(struct_flag, argv[struct_main_var->folder[0]], 0);
     } else {
         int index = 0;
         int limit_condition = index < struct_main_var->length_folder;

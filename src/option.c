@@ -8,22 +8,24 @@
 /**
 * @brief sort the file by time by sorting their index
 * @param file_t** file_array (the array of structure file to sort)
-* @param int* index_array_to_sort (the malloc array to stock the index)
-* @param int length (the length of index_array_to_sort)
+* @param int* index_buffer (the malloc array to stock the index)
+* @param int* index_array_to_sort (the array with the index sort with an other sorting method)
+* @param int length (the length of index_buffer)
 * @return void
 */
-void sort_file_by_time(file_t** file_array, int* index_array_to_sort, int length) {
+void sort_file_by_time(file_t** file_array, int* index_buffer, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
     }
-    index_array_to_sort[0] = 0;
+    index_buffer[0] = 0;
     int length_sort = 1;
     int index_to_sort = 1;
     int index_sort = 0;
     
     while(index_to_sort < length && length_sort < length){
-        if (index_sort == length_sort || file_array[index_to_sort]->time >= file_array[index_array_to_sort[index_sort]]->time) {
-            append_int_at_index(index_array_to_sort, length_sort, index_to_sort, index_sort);
+        //printf("%s %ld\n", file_array[index_array_to_sort[index_to_sort]]->name, file_array[index_array_to_sort[index_to_sort]]->time);
+        if (index_sort == length_sort || file_array[index_array_to_sort[index_to_sort]]->time >= file_array[index_buffer[index_sort]]->time) {
+            append_int_at_index(index_buffer, length_sort, index_array_to_sort[index_to_sort], index_sort);
             index_sort = 0;
             index_to_sort += 1;
             length_sort += 1;
@@ -36,22 +38,23 @@ void sort_file_by_time(file_t** file_array, int* index_array_to_sort, int length
 /** 
 * @brief sort the file by size by sorting their index
 * @param file_t** file_array (the array of structure file to sort)
-* @param int* index_array_to_sort (the malloc array to stock the index)
-* @param int length (the length of index_array_to_sort)
+* @param int* index_buffer (the malloc array to stock the index)
+* @param int* index_array_to_sort (the array with the index sort with an other sorting method)
+* @param int length (the length of index_buffer)
 * @return void
 */
-void sort_file_by_size(file_t** file_array, int* index_array_to_sort, int length) {
+void sort_file_by_size(file_t** file_array, int* index_buffer, int* index_array_to_sort, int length) {
     if (length < 1) {
         return;
     }
-    index_array_to_sort[0] = 0;
+    index_buffer[0] = 0;
     int length_sort = 1;
     int index_to_sort = 1;
     int index_sort = 0;
     
     while(index_to_sort < length && length_sort < length){
-        if (index_sort == length_sort || file_array[index_to_sort]->size > file_array[index_array_to_sort[index_sort]]->size) {
-            append_int_at_index(index_array_to_sort, length_sort, index_to_sort, index_sort);
+        if (index_sort == length_sort || file_array[index_array_to_sort[index_to_sort]]->size > file_array[index_buffer[index_sort]]->size) {
+            append_int_at_index(index_buffer, length_sort, index_array_to_sort[index_to_sort], index_sort);
             index_sort = 0;
             index_to_sort += 1;
             length_sort += 1;
@@ -64,22 +67,22 @@ void sort_file_by_size(file_t** file_array, int* index_array_to_sort, int length
 /** 
 * @brief sort the file by lexical order by sorting their index
 * @param file_t** file_array (the array of structure file to sort)
-* @param int* index_array_to_sort (the malloc array to stock the index)
-* @param int length (the length of index_array_to_sort)
+* @param int* index_buffer (the malloc array to stock the index)
+* @param int length (the length of index_buffer)
 * @return void
 */
-void sort_file_by_lexical(file_t** file_array, int* index_array_to_sort, int length) {
+void sort_file_by_lexical(file_t** file_array, int* index_buffer, int length) {
     if (length < 1) {
         return;
     }
-    index_array_to_sort[0] = 0;
+    index_buffer[0] = 0;
     int length_sort = 1;
     int index_to_sort = 1;
     int index_sort = 0;
     
     while(index_to_sort < length && length_sort < length){
-        if (index_sort == length_sort || my_strcmp(file_array[index_to_sort]->name, file_array[index_array_to_sort[index_sort]]->name) == file_array[index_to_sort]->name) {
-            append_int_at_index(index_array_to_sort, length_sort, index_to_sort, index_sort);
+        if (index_sort == length_sort || my_strcmp(file_array[index_to_sort]->name, file_array[index_buffer[index_sort]]->name) == file_array[index_to_sort]->name) {
+            append_int_at_index(index_buffer, length_sort, index_to_sort, index_sort);
             index_sort = 0;
             index_to_sort += 1;
             length_sort += 1;
@@ -122,21 +125,32 @@ int* sort_folder_by_lexical(char** argv, int* index_array_to_sort, int length) {
     return index_array_sorted;
 }
 
-
 /** 
 * @brief call the right sorting function for the file depending on the given sorting flag
 * @param array_file_t* struct_array_file (the struct with the different informations of the files)
 * @param char sort_flag (the given sorting flag)
 * @return void
 */
-void dispach_sort_file(array_file_t* struct_array_file, char sort_flag) {  
+void dispach_sort(array_file_t* struct_array_file, int* index_to_sort, char sort_flag) { 
     if (sort_flag == 't'){
-        sort_file_by_time(struct_array_file->array, struct_array_file->array_index_sorted, struct_array_file->length);
+        sort_file_by_time(struct_array_file->array, struct_array_file->array_index_sorted, index_to_sort, struct_array_file->length);
     } else if (sort_flag == 'S'){
-        sort_file_by_size(struct_array_file->array, struct_array_file->array_index_sorted, struct_array_file->length);
-    } else {
-        sort_file_by_lexical(struct_array_file->array, struct_array_file->array_index_sorted, struct_array_file->length);
+        sort_file_by_size(struct_array_file->array, struct_array_file->array_index_sorted, index_to_sort, struct_array_file->length);
     }
+    return;
+}
+
+/** 
+* @brief call the right sorting function for the file depending on the given sorting flag
+* @param array_file_t* struct_array_file (the struct with the different informations of the files)
+* @param char sort_secondary (the secondary sorting method for equality)
+* @param char sort_primary (the main sorting method)
+* @return void
+*/
+void sort_file(array_file_t* struct_array_file, char sort_secondary, char sort_primary) { 
+    sort_file_by_lexical(struct_array_file->array, struct_array_file->array_index_sorted, struct_array_file->length);
+    dispach_sort(struct_array_file, struct_array_file->array_index_sorted, sort_secondary);
+    dispach_sort(struct_array_file, struct_array_file->array_index_sorted, sort_primary);
     return;
 }
 
@@ -270,6 +284,20 @@ char get_display_caract(flag_t* struct_flag) {
 }
 
 /**
+* @brief find the right character that change how the print is display depending on the given display flag (-1 or -x) 
+* @param flag_t* struct_flag (the structure containing the different flags)
+* @param char* new_sort
+* @return void
+*/
+void get_sort_caract(flag_t* struct_flag, char new_sort) {
+    if (new_sort != struct_flag->sort_primary) {
+        struct_flag->sort_secondary = struct_flag->sort_primary;
+        struct_flag->sort_primary = new_sort;
+    }
+    return;
+}
+
+/**
 * @brief scan a string and find all the flag given in it 
 * @param flag_t* struct_flag (the structure containing the different flags)
 * @param char* flag_string (the string to scan)
@@ -288,7 +316,7 @@ int get_flags_in_string(flag_t* struct_flag, char* flag_string, char* autorize_c
     
     while (index_column < my_length(flag_string)) {
         if (check_if_char_in_string(autorize_sort, flag_string[index_column]) == 1) {
-            struct_flag->sort = flag_string[index_column];
+            get_sort_caract(struct_flag, flag_string[index_column]);
             is_in_sort = 1;
         }
         if (check_if_char_in_string(autorize_column, flag_string[index_column]) == 1) {
@@ -369,7 +397,8 @@ flag_t* get_flags(main_var_t* struct_main_var, char** argv) {
     }
     struct_flag->column = malloc(sizeof(char) * (nb_flag + 1));
     my_memset(struct_flag->column, '\0', nb_flag + 1);
-    struct_flag->sort = '\0';
+    struct_flag->sort_secondary = '\0';
+    struct_flag->sort_primary = '\0';
     
     get_flags_in_array(struct_main_var, struct_flag, argv, autorize_column, autorize_sort, autorize_display);
     free(autorize_column);
@@ -565,7 +594,7 @@ void folder_gestion(flag_t* struct_flag, char* folder_name, int multiple_folder)
         return;
     }
     
-    dispach_sort_file(structure_file, struct_flag->sort);
+    sort_file(structure_file, struct_flag->sort_secondary, struct_flag->sort_primary);
     print_array(structure_file, folder_name, struct_flag->column, struct_flag->display, struct_flag->way, multiple_folder, 0);
     free_struct_files(structure_file);
     return;

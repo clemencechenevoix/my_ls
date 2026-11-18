@@ -10,7 +10,7 @@
 
 // --- sort --- //
 int* sort_folder_by_lexical(char**, int*, int);
-void dispach_sort_file(array_file_t*, char);
+void sort_file(array_file_t*, char, char);
 
 // --- get --- //
 

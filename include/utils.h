@@ -6,7 +6,8 @@
 
 typedef struct struct_flag_s {
     char* column;
-    char sort;
+    char sort_primary;
+    char sort_secondary;
     char display;
     int way;
     int status;
